@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block contenido %}
+<section class="card centrado"><h1>{{ codigo }} · {{ titulo }}</h1><p>{{ mensaje }}</p>
+<a class="btn primario" href="{{ url_for('main.inicio') }}">Volver al inicio</a></section>
+{% endblock %}

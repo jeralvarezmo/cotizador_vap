@@ -1,0 +1,55 @@
+{# Fila editable de un elemento de la cotización (se usa también como plantilla para agregar filas). #}
+{% macro fila_item(f, productos, perfiles, vidrios) %}
+<div class="fila-item">
+  <div class="campo ident"><label>Identificación (habitación / ubicación)</label>
+    <input name="item_ident" value="{{ f.ident }}" maxlength="80" placeholder="Habitación 1: Ventana 1"></div>
+  <div class="campo"><label>Producto <span class="req">*</span></label>
+    <select name="item_producto" class="sel-producto" required>
+      <option value="">— elegir —</option>
+      {% for p in productos %}<option value="{{ p.id }}" data-cats="{{ p.cats_perfil }}" {{ 'selected' if f.producto|string == p.id|string }}>{{ p.nombre }}{% if p.estado_datos == 'supuesto' %} · SUPUESTO{% endif %}</option>{% endfor %}
+    </select></div>
+  <div class="campo"><label>Ancho (m) <span class="req">*</span></label><input name="item_ancho" value="{{ f.ancho }}" inputmode="decimal" placeholder="1.20" required></div>
+  <div class="campo"><label>Alto (m) <span class="req">*</span></label><input name="item_alto" value="{{ f.alto }}" inputmode="decimal" placeholder="1.00" required></div>
+  <div class="campo"><label>Cantidad</label><input name="item_cantidad" value="{{ f.cantidad }}" inputmode="numeric"></div>
+  <div class="campo"><label>Hojas</label><input name="item_hojas" value="{{ f.hojas }}" inputmode="numeric"></div>
+  <div class="campo"><label>Origen de la medida</label>
+    <select name="item_origen">{% for k, v in ORIGENES_MEDIDA.items() %}<option value="{{ k }}" {{ 'selected' if f.origen == k }}>{{ v }}</option>{% endfor %}</select></div>
+  <div class="campo"><label>Perfil (material)</label>
+    <select name="item_perfil" class="sel-perfil"><option value="">Por defecto del producto</option>
+      {% for m in perfiles %}<option value="{{ m.id }}" data-cat="{{ m.categoria }}" {{ 'selected' if f.perfil|string == m.id|string }}>{{ m.nombre }}</option>{% endfor %}</select></div>
+  <div class="campo"><label>Vidrio (tipo y espesor)</label>
+    <select name="item_vidrio"><option value="">Por defecto del producto</option>
+      {% for m in vidrios %}<option value="{{ m.id }}" {{ 'selected' if f.vidrio|string == m.id|string }}>{{ m.nombre }}</option>{% endfor %}</select></div>
+  <div class="campo ident"><label>Características / observaciones del elemento</label><input name="item_notas" value="{{ f.notas }}" maxlength="200"></div>
+  <button type="button" class="btn peligro chico quitar-fila" title="Quitar elemento">Quitar</button>
+</div>
+{% endmacro %}
+
+{# Desglose interno de un elemento: geometría, materiales, cantidades y costos. #}
+{% macro desglose_item(it, n) %}
+<div class="elemento">
+  <h3>Elemento {{ n }}{% if it.ident %}: {{ it.ident }}{% endif %} — {{ it.producto_nombre }}{% if it.producto_estado_datos == 'supuesto' %} <span class="badge b-demo">SUPUESTO — PENDIENTE DE CONFIRMAR</span>{% endif %}</h3>
+  <p class="geom">Ancho <strong>{{ it.ancho|cant }} m</strong> · Alto <strong>{{ it.alto|cant }} m</strong> · Área <strong>{{ it.area|cant }} m²</strong> · Perímetro <strong>{{ it.perimetro|cant }} m</strong> · Cantidad <strong>{{ it.cantidad }}</strong> · Hojas <strong>{{ it.hojas }}</strong> · Medida: {{ ORIGENES_MEDIDA.get(it.origen, it.origen) }}</p>
+  <div class="tabla-scroll"><table class="tabla compacta"><thead><tr><th>Concepto</th><th>Material usado</th><th class="derecha">Cantidad total</th><th class="derecha">Costo unitario</th><th class="derecha">Subtotal</th></tr></thead><tbody>
+  {% for l in it.lineas %}<tr><td>{{ l.concepto }}<br><small class="muted">{{ l.regla_texto }}</small></td>
+    <td>{{ l.material_nombre }}</td><td class="derecha nowrap">{{ l.cantidad|cant }} {{ UNIDADES.get(l.unidad, l.unidad) }}</td>
+    <td class="derecha nowrap">{{ l.precio_unit_c|q }}</td><td class="derecha nowrap">{{ l.subtotal_c|q }}</td></tr>{% endfor %}
+  <tr class="total"><td colspan="4">Costo de materiales del elemento</td><td class="derecha">{{ it.costo_materiales_c|q }}</td></tr></tbody></table></div>
+</div>
+{% endmacro %}
+
+{# Resumen económico INTERNO (nunca se muestra en la versión del cliente). #}
+{% macro resumen_costos(r) %}
+<div class="resumen-interno"><span class="etiqueta-interna">VISTA INTERNA — no se muestra al cliente</span>
+<table class="tabla compacta">
+  <tr><td>Materiales</td><td class="derecha">{{ r.costo_materiales_c|q }}</td></tr>
+  <tr><td>Mano de obra</td><td class="derecha">{{ r.mano_obra_c|q }}</td></tr>
+  <tr><td>Transporte</td><td class="derecha">{{ r.transporte_c|q }}</td></tr>
+  <tr><td>Otros conceptos{% if r.otros_detalle %} ({{ r.otros_detalle }}){% endif %}</td><td class="derecha">{{ r.otros_c|q }}</td></tr>
+  <tr class="total"><td>Costo total</td><td class="derecha">{{ r.costo_total_c|q }}</td></tr>
+  <tr><td>{{ BASES_MARGEN[r.base_margen] }}: {{ r.porcentaje|cant }} % <span class="badge b-demo">PROVISIONAL — PENDIENTE DE CONFIRMAR</span></td><td class="derecha">{{ r.utilidad_c|q }}</td></tr>
+  <tr class="total"><td>Utilidad estimada</td><td class="derecha">{{ r.utilidad_c|q }}{% if r.utilidad_sobre_costo is not none %}<br><small>{{ r.utilidad_sobre_costo }} % sobre el costo · {{ r.utilidad_sobre_precio }} % sobre el precio</small>{% endif %}</td></tr>
+  <tr class="gran-total"><td>Precio ofertado al cliente</td><td class="derecha">{{ r.precio_total_c|q }}</td></tr>
+</table>
+<p class="muted">Impuestos: PENDIENTE DE CONFIRMAR (no incluidos en este cálculo).</p></div>
+{% endmacro %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_form.html" import campo, texto, selector %}
+{% block title %}{{ p.nombre }}{% endblock %}
+{% block contenido %}
+<div class="encabezado"><h1>{{ p.nombre }}</h1><a class="btn" href="{{ url_for('productos.lista') }}">← Productos</a></div>
+<div class="alerta info">Receta de <strong>DEMOSTRACIÓN</strong>: los factores, desperdicios y cantidades son ficticios y están PENDIENTES DE CONFIRMAR con el negocio. Puedes editarlos aquí.</div>
+<form method="post" class="card formulario">
+  <div class="fila-campos">
+    {{ campo('nombre', 'Nombre', p.nombre, {}, requerido=True) }}
+    {{ selector('estado_datos', 'Estado de los datos', ESTADOS_DATOS, p.estado_datos, {}) }}
+  </div>
+  {{ campo('descripcion', 'Descripción', p.descripcion, {}) }}
+  <label class="check"><input type="checkbox" name="activo" value="1" {{ 'checked' if p.activo }}> Activo (disponible al cotizar)</label>
+  <h2>Receta (componentes y reglas de cantidad)</h2>
+  <div class="tabla-scroll"><table class="tabla"><thead><tr><th>Componente</th><th>Rol</th><th>Regla</th><th>Factor</th><th>Desperdicio %</th><th>Material por defecto</th></tr></thead><tbody>
+  {% for c in comps %}<tr>
+    <td><input type="hidden" name="comp_id" value="{{ c.id }}"><input name="comp_etiqueta" value="{{ c.etiqueta }}"></td>
+    <td><small>{{ c.rol }}<br>{{ c.categorias_permitidas }}</small></td>
+    <td><select name="comp_regla">{% for k, v in REGLAS.items() %}<option value="{{ k }}" {{ 'selected' if k == c.regla }}>{{ v }}</option>{% endfor %}</select></td>
+    <td><input name="comp_factor" value="{{ c.factor|cant }}" inputmode="decimal" size="6"></td>
+    <td><input name="comp_desp" value="{{ c.desperdicio_pct|cant }}" inputmode="decimal" size="5"></td>
+    <td><select name="comp_material"><option value="">— ninguno —</option>{% for m in materiales %}<option value="{{ m.id }}" {{ 'selected' if m.id == c.material_id }}>{{ m.nombre }}</option>{% endfor %}</select></td>
+  </tr>{% endfor %}</tbody></table></div>
+  <div class="acciones"><button class="btn primario">Guardar producto y receta</button></div>
+</form>
+{% endblock %}

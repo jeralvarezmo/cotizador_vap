@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_form.html" import campo, texto, selector %}
+{% block title %}Inventario{% endblock %}
+{% block contenido %}
+<h1>Existencias y sobrantes</h1>
+<div class="alerta info"><strong>Registro básico y manual.</strong> No descuenta materiales automáticamente: las reglas reales de consumo y corte están PENDIENTES. Vidrio (forma plana) y perfiles (forma lineal) se representan distinto.</div>
+<section class="card formulario"><h2>Agregar registro</h2>
+<form method="post" action="{{ url_for('inventario.nuevo') }}">
+  <div class="fila-campos">
+    {{ selector('tipo', 'Tipo', TIPOS_INVENTARIO, 'sobrante', {}) }}
+    {{ selector('forma', 'Forma', FORMAS, 'plana', {}) }}
+    <div class="campo"><label for="material_id">Material (opcional)</label><select id="material_id" name="material_id"><option value="">—</option>{% for m in materiales %}<option value="{{ m.id }}">{{ m.nombre }}</option>{% endfor %}</select></div>
+  </div>
+  {{ campo('descripcion', 'Descripción', '', {}, requerido=True, extra='maxlength="150"') }}
+  <div class="fila-campos">
+    {{ campo('cantidad', 'Cantidad', '1', {}, extra='inputmode="decimal"') }}
+    {{ campo('largo_m', 'Largo (m) — perfiles', '', {}, extra='inputmode="decimal"') }}
+    {{ campo('ancho_m', 'Ancho (m) — vidrio', '', {}, extra='inputmode="decimal"') }}
+    {{ campo('alto_m', 'Alto (m) — vidrio', '', {}, extra='inputmode="decimal"') }}
+  </div>
+  <div class="fila-campos">{{ campo('espesor', 'Espesor', '', {}) }}{{ campo('serie', 'Serie', '', {}) }}{{ campo('color', 'Color', '', {}) }}{{ campo('ubicacion', 'Ubicación de almacenamiento', '', {}) }}</div>
+  {{ campo('observaciones', 'Observaciones', '', {}) }}
+  <label class="check"><input type="checkbox" name="reutilizable" value="1" checked> Reutilizable</label>
+  <div class="acciones"><button class="btn primario">Agregar</button></div>
+</form></section>
+<form class="filtros" method="get">
+  <select name="tipo"><option value="">Existencias y sobrantes</option>{% for k, v in TIPOS_INVENTARIO.items() %}<option value="{{ k }}" {{ 'selected' if k == tipo }}>{{ v }}</option>{% endfor %}</select>
+  <select name="estado"><option value="">Todos los estados</option>{% for k, v in ESTADOS_INVENTARIO.items() %}<option value="{{ k }}" {{ 'selected' if k == estado }}>{{ v }}</option>{% endfor %}</select><button class="btn">Filtrar</button></form>
+<section class="card"><div class="tabla-scroll"><table class="tabla"><thead><tr><th>Registro</th><th>Medidas</th><th>Ubicación</th><th>Estado</th><th>Cambiar estado</th></tr></thead><tbody>
+{% for i in filas %}<tr><td>{{ i.descripcion }}<br><small class="muted">{{ TIPOS_INVENTARIO[i.tipo] }} · {{ i.fecha_registro|fecha }}{% if i.reutilizable %} · reutilizable{% endif %}{% if i.espesor %} · {{ i.espesor }}{% endif %}{% if i.serie %} · {{ i.serie }}{% endif %}{% if i.color %} · {{ i.color }}{% endif %}</small></td>
+<td>{% if i.forma == 'lineal' %}{{ i.largo_m|cant }} m (largo){% elif i.forma == 'plana' %}{{ i.ancho_m|cant }} × {{ i.alto_m|cant }} m{% endif %} {% if i.forma == 'unidades' or i.cantidad != 1 %}· cant. {{ i.cantidad|cant }}{% endif %}</td>
+<td>{{ i.ubicacion or '—' }}</td><td><span class="badge b-inv-{{ i.estado }}">{{ ESTADOS_INVENTARIO[i.estado] }}</span></td>
+<td><form method="post" action="{{ url_for('inventario.estado', iid=i.id) }}" class="en-linea"><select name="estado">{% for k, v in ESTADOS_INVENTARIO.items() %}<option value="{{ k }}" {{ 'selected' if k == i.estado }}>{{ v }}</option>{% endfor %}</select><button class="btn chico">Aplicar</button></form></td></tr>
+{% else %}<tr><td colspan="5" class="muted">No hay registros.</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

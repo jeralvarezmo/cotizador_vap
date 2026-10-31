@@ -1,0 +1,27 @@
+{% macro campo(nombre, etiqueta, valor='', errores={}, requerido=False, ayuda='', tipo='text', extra='') %}
+<div class="campo {{ 'con-error' if errores.get(nombre) }}">
+  <label for="{{ nombre }}">{{ etiqueta }}{% if requerido %} <span class="req">*</span>{% endif %}</label>
+  <input id="{{ nombre }}" name="{{ nombre }}" type="{{ tipo }}" value="{{ valor if valor is not none else '' }}" {{ extra|safe }}>
+  {% if ayuda %}<small>{{ ayuda }}</small>{% endif %}
+  {% if errores.get(nombre) %}<span class="error-msg">{{ errores[nombre] }}</span>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro texto(nombre, etiqueta, valor='', errores={}, filas=3) %}
+<div class="campo {{ 'con-error' if errores.get(nombre) }}">
+  <label for="{{ nombre }}">{{ etiqueta }}</label>
+  <textarea id="{{ nombre }}" name="{{ nombre }}" rows="{{ filas }}">{{ valor or '' }}</textarea>
+  {% if errores.get(nombre) %}<span class="error-msg">{{ errores[nombre] }}</span>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro selector(nombre, etiqueta, opciones, valor='', errores={}, vacio=None, requerido=False) %}
+<div class="campo {{ 'con-error' if errores.get(nombre) }}">
+  <label for="{{ nombre }}">{{ etiqueta }}{% if requerido %} <span class="req">*</span>{% endif %}</label>
+  <select id="{{ nombre }}" name="{{ nombre }}">
+    {% if vacio %}<option value="">{{ vacio }}</option>{% endif %}
+    {% for clave, nombre_op in opciones.items() %}<option value="{{ clave }}" {{ 'selected' if clave == valor }}>{{ nombre_op }}</option>{% endfor %}
+  </select>
+  {% if errores.get(nombre) %}<span class="error-msg">{{ errores[nombre] }}</span>{% endif %}
+</div>
+{% endmacro %}

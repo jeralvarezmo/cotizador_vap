@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Cotizaciones{% endblock %}
+{% block contenido %}
+<div class="encabezado"><h1>Cotizaciones</h1><a class="btn primario" href="{{ url_for('cotizaciones.nueva') }}">+ Nueva cotización</a></div>
+<form class="filtros" method="get"><input name="q" value="{{ q }}" placeholder="Buscar por cliente o número">
+<select name="estado"><option value="">Todos los estados</option>{% for k, v in ESTADOS.items() %}<option value="{{ k }}" {{ 'selected' if k == estado }}>{{ v }}</option>{% endfor %}</select><button class="btn">Filtrar</button></form>
+<section class="card">{% if cotizaciones %}
+<table class="tabla"><thead><tr><th>N.º</th><th>Fecha</th><th>Cliente</th><th class="derecha">Total</th><th>Vigencia</th><th>Estado</th></tr></thead><tbody>
+{% for c in cotizaciones %}<tr><td><a href="{{ url_for('cotizaciones.detalle', cid=c.id) }}">{{ c.numero|cot_num }}</a></td><td>{{ c.fecha|fecha }}</td><td>{{ c.cliente_nombre }}</td>
+<td class="derecha nowrap">{{ c.precio_total_c|q }}</td><td>{{ c.vigencia_hasta|fecha }}</td><td><span class="badge b-{{ c.estado }}">{{ ESTADOS[c.estado] }}</span></td></tr>{% endfor %}
+</tbody></table>{% else %}<p class="muted">No hay cotizaciones con esos filtros.</p>{% endif %}</section>
+{% endblock %}

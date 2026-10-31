@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Cotizador VAP{% endblock %} · Vidrios y Aluminios Álvarez</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="demo-banner">PROTOTIPO ACADÉMICO · Precios, recetas y cantidades son DATOS DE DEMOSTRACIÓN — NO UTILIZAR PARA COTIZACIONES REALES</div>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('main.inicio') }}">
+      <span class="logo">VA</span>
+      <span><strong>Vidrios y Aluminios Álvarez</strong><small>Cotizador VAP · uso local</small></span>
+    </a>
+    <nav>
+      {% set b = request.blueprint %}
+      <a href="{{ url_for('main.inicio') }}" class="{{ 'activo' if b == 'main' }}">Inicio</a>
+      <a href="{{ url_for('clientes.lista') }}" class="{{ 'activo' if b == 'clientes' }}">Clientes</a>
+      <a href="{{ url_for('cotizaciones.lista') }}" class="{{ 'activo' if b == 'cotizaciones' }}">Cotizaciones</a>
+      <a href="{{ url_for('productos.lista') }}" class="{{ 'activo' if b == 'productos' }}">Productos</a>
+      <a href="{{ url_for('materiales.lista') }}" class="{{ 'activo' if b == 'materiales' }}">Materiales</a>
+      <a href="{{ url_for('inventario.lista') }}" class="{{ 'activo' if b == 'inventario' }}">Inventario</a>
+      <a href="{{ url_for('configuracion.editar') }}" class="{{ 'activo' if b == 'configuracion' }}">Configuración</a>
+    </nav>
+  </header>
+  <main class="contenedor">
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+      {% for categoria, texto in mensajes %}<div class="alerta {{ categoria }}">{{ texto }}</div>{% endfor %}
+    {% endwith %}
+    {% block contenido %}{% endblock %}
+  </main>
+  <footer class="pie">Aplicación local sin inicio de sesión: no exponer a internet ni a redes no confiables.</footer>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "_form.html" import campo, selector %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block contenido %}
+<h1>{{ titulo }}</h1>
+<form method="post" class="card formulario">
+  {{ campo('nombre', 'Nombre', datos.get('nombre'), errores, requerido=True, extra='maxlength="120" required') }}
+  <div class="fila-campos">
+    {{ selector('categoria', 'Categoría', CATEGORIAS_MATERIAL, datos.get('categoria'), errores, vacio='— elegir —', requerido=True) }}
+    {{ selector('unidad', 'Unidad de compra/uso', UNIDADES, datos.get('unidad'), errores, vacio='— elegir —', requerido=True) }}
+  </div>
+  <div class="fila-campos">
+    {{ campo('precio', 'Precio vigente por unidad (Q)', datos.get('precio'), errores, requerido=True, extra='inputmode="decimal" placeholder="0.00"') }}
+    {{ campo('proveedor', 'Proveedor', datos.get('proveedor'), errores, ayuda='Opcional. Dato interno: nunca aparece en la cotización del cliente.') }}
+  </div>
+  {{ campo('caracteristicas', 'Características', datos.get('caracteristicas'), errores, ayuda='Opcional. Ej.: espesor, color, serie.') }}
+  <label class="check"><input type="checkbox" name="activo" value="1" {{ 'checked' if datos.get('activo') }}> Activo (aparece al cotizar)</label>
+  <label class="check"><input type="checkbox" name="es_demo" value="1" {{ 'checked' if datos.get('es_demo') }}> Dato de demostración (ficticio)</label>
+  <div class="acciones"><button class="btn primario">Guardar</button><a class="btn" href="{{ url_for('materiales.lista') }}">Cancelar</a></div>
+</form>
+{% endblock %}

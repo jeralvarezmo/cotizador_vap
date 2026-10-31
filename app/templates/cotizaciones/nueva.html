@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_form.html" import campo, texto %}
+{% from "cotizaciones/_macros.html" import fila_item, desglose_item, resumen_costos %}
+{% block title %}Nueva cotización{% endblock %}
+{% block contenido %}
+<h1>Nueva cotización</h1>
+<p class="muted">Cliente → elementos (producto y medidas) → cálculo → costos → precio. Todos los cálculos se ejecutan en Python (servidor); las medidas se expresan en metros.</p>
+{% if res and res.errores %}<div class="alerta error"><strong>Revisa lo siguiente:</strong><ul>{% for e in res.errores %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+<form method="post" id="form-cotizacion">
+  <section class="card formulario"><h2>1. Cliente y condiciones</h2>
+    <div class="fila-campos">
+      <div class="campo"><label for="cliente_id">Cliente <span class="req">*</span></label>
+        <select id="cliente_id" name="cliente_id" required><option value="">— elegir —</option>
+        {% for c in clientes %}<option value="{{ c.id }}" {{ 'selected' if valores.get('cliente_id')|string == c.id|string }}>{{ c.nombre }}</option>{% endfor %}</select>
+        <small><a href="{{ url_for('clientes.nuevo') }}">Registrar un cliente nuevo</a></small></div>
+      {{ campo('vigencia_dias', 'Vigencia (días)', valores.get('vigencia_dias'), {}, extra='inputmode="numeric"') }}
+    </div></section>
+  <section class="card"><h2>2. Elementos</h2>
+    <p class="muted">Una cotización puede tener varios elementos (ventanas, puertas…). Las dimensiones y reglas definitivas se confirmarán con el negocio.</p>
+    <div id="filas-items">{% for f in filas %}{{ fila_item(f, productos, perfiles, vidrios) }}{% endfor %}</div>
+    <template id="plantilla-fila">{{ fila_item(fila_vacia, productos, perfiles, vidrios) }}</template>
+    <button type="button" class="btn" id="agregar-fila">+ Agregar elemento</button></section>
+  <section class="card formulario"><h2>3. Costos adicionales y precio</h2>
+    <div class="fila-campos">
+      {{ campo('mano_obra', 'Mano de obra (Q)', valores.get('mano_obra'), {}, extra='inputmode="decimal"') }}
+      {{ campo('transporte', 'Transporte / combustible (Q)', valores.get('transporte'), {}, extra='inputmode="decimal"') }}
+      {{ campo('otros', 'Otros conceptos (Q)', valores.get('otros'), {}, extra='inputmode="decimal"') }}
+    </div>
+    {{ campo('otros_detalle', 'Detalle de otros conceptos', valores.get('otros_detalle'), {}, ayuda='Ej.: traslado, empaques, consumibles.') }}
+    <div class="fila-campos">
+      <div class="campo"><label for="base">Base del porcentaje <span class="badge b-demo">PENDIENTE DE CONFIRMAR</span></label>
+        <select id="base" name="base">{% for k, v in BASES_MARGEN.items() %}<option value="{{ k }}" {{ 'selected' if valores.get('base') == k }}>{{ v }}</option>{% endfor %}</select>
+        <small>Son cálculos distintos: 30 % de recargo sobre el costo ≠ 30 % de margen sobre el precio.</small></div>
+      {{ campo('porcentaje', 'Porcentaje (%) — provisional', valores.get('porcentaje'), {}, extra='inputmode="decimal"') }}
+    </div>
+    {{ texto('observaciones', 'Observaciones (visibles al cliente)', valores.get('observaciones'), {}, 2) }}
+    {{ texto('condiciones', 'Condiciones (visibles al cliente)', valores.get('condiciones'), {}, 3) }}
+  </section>
+  <div class="acciones sticky"><button class="btn" name="accion" value="calcular">Calcular (vista previa)</button>
+    <button class="btn primario" name="accion" value="guardar">Guardar cotización</button></div>
+</form>
+{% if res and res.totales %}
+<section class="card" id="vista-previa"><h2>Vista previa del cálculo</h2>
+  <p class="muted">Todavía no está guardada. Revisa y presiona «Guardar cotización».</p>
+  {% for it in res['items'] %}{{ desglose_item(it, loop.index) }}{% endfor %}
+  {{ resumen_costos(res.resumen) }}
+  <h3>Precio ofertado por elemento (lo que verá el cliente)</h3>
+  <table class="tabla compacta">{% for it in res['items'] %}<tr><td>{{ it.ident or ('Elemento ' ~ loop.index) }} — {{ it.producto_nombre }} (× {{ it.cantidad }})</td><td class="derecha">{{ it.precio_c|q }}</td></tr>{% endfor %}</table>
+</section>{% endif %}
+{% endblock %}

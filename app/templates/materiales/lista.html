@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Materiales{% endblock %}
+{% block contenido %}
+<div class="encabezado"><h1>Materiales y precios</h1><a class="btn primario" href="{{ url_for('materiales.nuevo') }}">+ Nuevo material</a></div>
+<form class="filtros" method="get">
+  <input name="q" value="{{ q }}" placeholder="Buscar nombre, proveedor o característica">
+  <select name="categoria"><option value="">Todas las categorías</option>{% for k, v in CATEGORIAS_MATERIAL.items() %}<option value="{{ k }}" {{ 'selected' if k == categoria }}>{{ v }}</option>{% endfor %}</select>
+  <select name="estado"><option value="">Activos e inactivos</option><option value="activos" {{ 'selected' if estado == 'activos' }}>Solo activos</option><option value="inactivos" {{ 'selected' if estado == 'inactivos' }}>Solo inactivos</option></select>
+  <button class="btn">Filtrar</button>
+</form>
+<section class="card">
+<p class="muted">Vista administrativa: contiene datos internos (proveedor y precio de compra). Cambiar un precio no modifica las cotizaciones ya guardadas.</p>
+<table class="tabla"><thead><tr><th>Material</th><th>Categoría</th><th>Unidad</th><th>Proveedor</th><th class="derecha">Precio vigente</th><th>Estado</th><th></th></tr></thead><tbody>
+{% for m in materiales %}<tr><td>{{ m.nombre }}{% if m.es_demo %} <span class="badge b-demo">DEMO</span>{% endif %}<br><small class="muted">{{ m.caracteristicas or '' }}</small></td>
+<td>{{ CATEGORIAS_MATERIAL.get(m.categoria, m.categoria) }}</td><td>{{ UNIDADES.get(m.unidad, m.unidad) }}</td><td>{{ m.proveedor or '—' }}</td>
+<td class="derecha nowrap">{{ m.precio_centavos|q }}</td><td>{{ 'Activo' if m.activo else 'Inactivo' }}</td>
+<td class="derecha"><a href="{{ url_for('materiales.editar', mid=m.id) }}">Editar</a></td></tr>
+{% else %}<tr><td colspan="7" class="muted">No hay materiales con esos filtros.</td></tr>{% endfor %}
+</tbody></table></section>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "cotizaciones/_macros.html" import desglose_item, resumen_costos %}
+{% block title %}{{ c.numero|cot_num }}{% endblock %}
+{% block contenido %}
+<div class="encabezado"><div><h1>{{ c.numero|cot_num }} <span class="badge b-{{ c.estado }}">{{ ESTADOS[c.estado] }}</span></h1>
+<p class="muted">Cliente: <a href="{{ url_for('clientes.detalle', cid=c.cliente_id) }}">{{ c.cliente_nombre }}</a> · Fecha: {{ c.fecha|fecha }} · Vigente hasta: {{ c.vigencia_hasta|fecha }}</p></div>
+<div class="acciones"><a class="btn primario" target="_blank" href="{{ url_for('cotizaciones.imprimir', cid=c.id) }}">Versión para el cliente / imprimir</a></div></div>
+{% if c.usa_demo %}<div class="alerta info">Esta cotización usa <strong>DATOS DE DEMOSTRACIÓN</strong>. No es válida para cotizaciones reales.</div>{% endif %}
+<section class="card"><h2>Acciones</h2><div class="acciones">
+  {% for s in siguientes %}<form method="post" action="{{ url_for('cotizaciones.estado', cid=c.id) }}" data-confirmar="¿Cambiar el estado a «{{ ESTADOS[s] }}»?">
+    <input type="hidden" name="estado" value="{{ s }}"><button class="btn {{ 'primario' if s == 'aprobada' else 'peligro' if s in ('rechazada','cancelada') }}">Marcar como {{ ESTADOS[s]|lower }}</button></form>{% endfor %}
+  {% if not siguientes %}<span class="muted">Estado final: no admite más cambios.</span>{% endif %}
+  <form method="post" action="{{ url_for('cotizaciones.duplicar', cid=c.id) }}"><input type="hidden" name="modo" value="exacto"><button class="btn">Duplicar (mismos importes)</button></form>
+  <form method="post" action="{{ url_for('cotizaciones.duplicar', cid=c.id) }}"><input type="hidden" name="modo" value="recalcular"><button class="btn">Duplicar y recalcular con precios vigentes</button></form>
+</div><p class="muted">Una cotización guardada conserva los precios usados en su elaboración, aunque el catálogo cambie después.</p></section>
+<section class="card"><h2>Elementos y desglose (vista interna)</h2>
+{% for it in items %}{{ desglose_item(it, loop.index) }}{% endfor %}
+{{ resumen_costos(resumen) }}
+{% if c.observaciones %}<p><strong>Observaciones:</strong> {{ c.observaciones }}</p>{% endif %}</section>
+<section class="card"><h2>Historial de cambios</h2><table class="tabla compacta"><thead><tr><th>Fecha y hora</th><th>Acción</th><th>Cambio</th><th>Nota</th></tr></thead><tbody>
+{% for h in historial %}<tr><td>{{ h.fecha_hora }}</td><td>{{ h.accion }}</td><td>{% if h.estado_anterior %}{{ ESTADOS[h.estado_anterior] }} → {% endif %}{{ ESTADOS[h.estado_nuevo] if h.estado_nuevo else '' }}</td><td>{{ h.nota or '' }}</td></tr>{% endfor %}</tbody></table></section>
+{% endblock %}

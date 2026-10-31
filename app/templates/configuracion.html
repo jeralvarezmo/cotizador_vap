@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "_form.html" import campo, texto, selector %}
+{% block title %}Configuración{% endblock %}
+{% block contenido %}
+<h1>Configuración</h1>
+<div class="alerta info">Valores <strong>provisionales de demostración</strong>. La base y el porcentaje del margen, y los impuestos, están PENDIENTES DE CONFIRMAR con el negocio.</div>
+<form method="post" class="card formulario">
+  <div class="fila-campos">{{ campo('nombre_negocio', 'Nombre del negocio', datos.get('nombre_negocio'), errores, requerido=True) }}{{ campo('ubicacion_negocio', 'Ubicación', datos.get('ubicacion_negocio'), errores) }}</div>
+  <div class="fila-campos">{{ selector('base_margen', 'Base del porcentaje comercial', BASES_MARGEN, datos.get('base_margen'), errores) }}{{ campo('porcentaje', 'Porcentaje provisional (%)', datos.get('porcentaje'), errores, extra='inputmode="decimal"') }}{{ campo('vigencia_dias', 'Vigencia por defecto (días)', datos.get('vigencia_dias'), errores, extra='inputmode="numeric"') }}</div>
+  <div class="fila-campos">{{ campo('medida_min', 'Medida mínima válida (m)', datos.get('medida_min'), errores, extra='inputmode="decimal"') }}{{ campo('medida_max', 'Medida máxima válida (m)', datos.get('medida_max'), errores, extra='inputmode="decimal"') }}</div>
+  {{ texto('condiciones', 'Condiciones por defecto de la cotización', datos.get('condiciones'), errores, 3) }}
+  <div class="acciones"><button class="btn primario">Guardar configuración</button></div>
+</form>
+{% endblock %}

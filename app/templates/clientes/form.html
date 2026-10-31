@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "_form.html" import campo, texto %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block contenido %}
+<h1>{{ titulo }}</h1>
+<form method="post" class="card formulario">
+  {{ campo('nombre', 'Nombre', datos.get('nombre'), errores, requerido=True, extra='maxlength="120" required') }}
+  <div class="fila-campos">
+    {{ campo('telefono', 'Teléfono', datos.get('telefono'), errores, ayuda='Opcional. Entre 7 y 15 dígitos.', extra='inputmode="tel"') }}
+    {{ campo('correo', 'Correo electrónico', datos.get('correo'), errores, ayuda='Opcional.') }}
+  </div>
+  {{ campo('direccion', 'Dirección', datos.get('direccion'), errores) }}
+  {{ texto('observaciones', 'Observaciones', datos.get('observaciones'), errores) }}
+  <div class="acciones"><button class="btn primario">Guardar</button><a class="btn" href="{{ url_for('clientes.lista') }}">Cancelar</a></div>
+</form>
+{% endblock %}

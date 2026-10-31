@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ c.nombre }}{% endblock %}
+{% block contenido %}
+<div class="encabezado"><h1>{{ c.nombre }}</h1>
+<div class="acciones"><a class="btn" href="{{ url_for('clientes.editar', cid=c.id) }}">Editar</a>
+<a class="btn primario" href="{{ url_for('cotizaciones.nueva', cliente_id=c.id) }}">+ Cotización para este cliente</a></div></div>
+<section class="card"><h2>Ficha</h2>
+<dl class="ficha"><dt>Teléfono</dt><dd>{{ c.telefono or '—' }}</dd><dt>Correo</dt><dd>{{ c.correo or '—' }}</dd>
+<dt>Dirección</dt><dd>{{ c.direccion or '—' }}</dd><dt>Observaciones</dt><dd>{{ c.observaciones or '—' }}</dd>
+<dt>Registrado</dt><dd>{{ c.creado_en|fecha }}</dd></dl></section>
+<section class="card"><h2>Cotizaciones asociadas</h2>
+{% if cotizaciones %}<table class="tabla"><thead><tr><th>N.º</th><th>Fecha</th><th class="derecha">Total</th><th>Estado</th></tr></thead><tbody>
+{% for q in cotizaciones %}<tr><td><a href="{{ url_for('cotizaciones.detalle', cid=q.id) }}">{{ q.numero|cot_num }}</a></td><td>{{ q.fecha|fecha }}</td>
+<td class="derecha">{{ q.precio_total_c|q }}</td><td><span class="badge b-{{ q.estado }}">{{ ESTADOS[q.estado] }}</span></td></tr>{% endfor %}</tbody></table>
+{% else %}<p class="muted">Este cliente todavía no tiene cotizaciones.</p>{% endif %}</section>
+{% endblock %}

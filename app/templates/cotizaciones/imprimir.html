@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ c.numero|cot_num }} · {{ cfg.nombre_negocio }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}">
+</head>
+<body>
+<div class="barra-impresion"><button onclick="window.print()">Imprimir / Guardar como PDF</button><a href="{{ url_for('cotizaciones.detalle', cid=c.id) }}">← Volver</a></div>
+<article class="hoja">
+  {% if c.usa_demo %}<div class="aviso-demo">COTIZACIÓN DE DEMOSTRACIÓN — NO VÁLIDA · Datos ficticios del prototipo académico</div>{% endif %}
+  <header class="cab"><div><h1>{{ cfg.nombre_negocio }}</h1><p>{{ cfg.ubicacion_negocio }}</p></div>
+    <div class="num"><strong>COTIZACIÓN {{ c.numero|cot_num }}</strong><br>Fecha: {{ c.fecha|fecha }}<br>Vigente hasta: {{ c.vigencia_hasta|fecha }}</div></header>
+  <section class="cliente"><h2>Cliente</h2><p><strong>{{ c.cliente_nombre }}</strong>
+    {% if c.cliente_telefono %}<br>Tel.: {{ c.cliente_telefono }}{% endif %}{% if c.cliente_direccion %}<br>{{ c.cliente_direccion }}{% endif %}</p></section>
+  <table class="items"><thead><tr><th>#</th><th>Descripción</th><th>Medidas (ancho × alto)</th><th>Cant.</th><th class="der">Precio ofertado</th></tr></thead><tbody>
+  {% for it in items %}<tr><td>{{ loop.index }}</td>
+    <td><strong>{{ it.ident or ('Elemento ' ~ loop.index) }}</strong><br>{{ it.producto_nombre }}{% if it.notas %}<br><small>{{ it.notas }}</small>{% endif %}</td>
+    <td>{{ it.ancho|cant }} m × {{ it.alto|cant }} m</td><td>{{ it.cantidad }}</td><td class="der">{{ it.precio_c|q }}</td></tr>{% endfor %}</tbody>
+  <tfoot><tr><td colspan="4" class="der"><strong>TOTAL</strong></td><td class="der"><strong>{{ c.precio_total_c|q }}</strong></td></tr></tfoot></table>
+  {% if c.observaciones %}<section><h2>Observaciones</h2><p>{{ c.observaciones }}</p></section>{% endif %}
+  <section><h2>Condiciones</h2><p>{{ c.condiciones }}</p><p>Esta cotización tiene una vigencia de {{ c.vigencia_dias }} días.</p></section>
+  <footer class="firmas"><div>Aceptado por el cliente</div><div>{{ cfg.nombre_negocio }}</div></footer>
+</article>
+</body>
+</html>

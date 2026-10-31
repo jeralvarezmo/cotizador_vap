@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Inicio{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <div><h1>Panel de control</h1><p class="muted">Resumen del sistema de cotización.</p></div>
+  <a class="btn primario" href="{{ url_for('cotizaciones.nueva') }}">+ Nueva cotización</a>
+</div>
+<section class="kpis">
+  <a class="kpi" href="{{ url_for('clientes.lista') }}"><span>Clientes registrados</span><strong>{{ n_clientes }}</strong></a>
+  <a class="kpi" href="{{ url_for('cotizaciones.lista', estado='pendiente') }}"><span>Cotizaciones pendientes</span><strong>{{ conteos.get('pendiente', 0) }}</strong></a>
+  <a class="kpi" href="{{ url_for('cotizaciones.lista', estado='aprobada') }}"><span>Cotizaciones aprobadas</span><strong>{{ conteos.get('aprobada', 0) }}</strong></a>
+  <a class="kpi" href="{{ url_for('cotizaciones.lista') }}"><span>Total de cotizaciones</span><strong>{{ total }}</strong></a>
+</section>
+<div class="grid-2">
+  <section class="card">
+    <h2>Cotizaciones recientes</h2>
+    {% if recientes %}
+    <table class="tabla"><thead><tr><th>N.º</th><th>Cliente</th><th class="derecha">Total</th><th>Estado</th></tr></thead><tbody>
+      {% for c in recientes %}<tr>
+        <td><a href="{{ url_for('cotizaciones.detalle', cid=c.id) }}">{{ c.numero|cot_num }}</a></td>
+        <td>{{ c.cliente_nombre }}</td><td class="derecha nowrap">{{ c.precio_total_c|q }}</td>
+        <td><span class="badge b-{{ c.estado }}">{{ ESTADOS[c.estado] }}</span></td></tr>{% endfor %}
+    </tbody></table>
+    {% else %}<p class="muted">Aún no hay cotizaciones. Crea la primera con el botón «Nueva cotización».</p>{% endif %}
+  </section>
+  <section class="card">
+    <h2>Accesos rápidos</h2>
+    <ul class="accesos">
+      <li><a href="{{ url_for('clientes.nuevo') }}">Registrar un cliente</a></li>
+      <li><a href="{{ url_for('cotizaciones.nueva') }}">Crear una cotización</a></li>
+      <li><a href="{{ url_for('productos.lista') }}">Ver productos y recetas de demostración</a></li>
+      <li><a href="{{ url_for('materiales.lista') }}">Consultar materiales y precios</a></li>
+      <li><a href="{{ url_for('inventario.lista') }}">Existencias y sobrantes (registro básico)</a></li>
+    </ul>
+  </section>
+</div>
+{% endblock %}
